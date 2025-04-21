@@ -22,8 +22,17 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
+	defer conn.Close()
 
-	users, err := repository.ListUsers(ctx, conn)
+	// Start a transaction that implements boil.ContextExecutor
+	tx, err := conn.BeginTx(ctx, nil)
+	if err != nil {
+		http.Error(w, "transaction error", http.StatusInternalServerError)
+		return
+	}
+	defer tx.Rollback()
+
+	users, err := repository.ListUsers(ctx, tx)
 	if err != nil {
 		http.Error(w, "query error", http.StatusInternalServerError)
 		return
@@ -31,5 +40,5 @@ func Users(w http.ResponseWriter, r *http.Request) {
 
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
-	_ = enc.Encode(users)
+	enc.Encode(users)
 }

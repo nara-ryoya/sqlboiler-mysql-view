@@ -25,9 +25,14 @@ func Init(user, pass, host string, port int) error {
 }
 
 // ConnForTenant sets @current_tenant_id on a fresh connection.
-func ConnForTenant(ctx context.Context, tenantID uint64) (*sql.DB, error) {
-	if _, err := pool.ExecContext(ctx, "SET @current_tenant_id = ?", tenantID); err != nil {
+func ConnForTenant(ctx context.Context, tenantID uint64) (*sql.Conn, error) {
+	conn, err := pool.Conn(ctx)
+	if err != nil {
 		return nil, err
 	}
-	return pool, nil
+	if _, err := conn.ExecContext(ctx, "SET @current_tenant_id = ?", tenantID); err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
+	return conn, nil
 }
