@@ -1,0 +1,15 @@
+[mysql]
+  dbname  = "db"
+  host    = "127.0.0.1"
+  port    = 3306
+  user    = "root"
+  pass    = "rootpass"
+  sslmode = "false"
+
+[mysql.schema]
+  whitelist = ["users"]   # 必要なテーブルだけ列挙
+
+[boiler]
+  pkg_name  = "models"
+  output    = "internal/models"
+  add_global_variants = true
